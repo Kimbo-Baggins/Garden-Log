@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garden Log</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+.app-wrap{max-width:720px;margin:0 auto;padding:16px}
+input,select,button,textarea{font-family:inherit;font-size:13px}
+input[type=text],input[type=number],input[type=email]{border:1px solid #d0d0c8;border-radius:8px;padding:6px 9px;background:#fff;color:#1a1a1a;width:100%}
+textarea{border:1px solid #d0d0c8;border-radius:8px;padding:8px 10px;background:#fff;color:#1a1a1a;width:100%;resize:vertical;line-height:1.5}
+input:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #b8ddb0;border-color:#4a9e5c}
+input[type=checkbox]{width:15px;height:15px;accent-color:#4a9e5c;cursor:pointer;flex-shrink:0}
+button{cursor:pointer;border-radius:8px;padding:6px 12px;border:1px solid #d0d0c8;background:#fff;color:#1a1a1a;transition:background 0.15s}
+button:hover{background:#f0f0e8}
+button.primary{background:#4a9e5c;color:#fff;border-color:#4a9e5c}
+button.primary:hover{background:#357a45}
+button.save-btn{background:#5b7fa6;color:#fff;border-color:#5b7fa6}
+button.save-btn:hover{background:#3f5f80}
+button.warn-btn{background:#fff;color:#c17f2a;border-color:#c17f2a}
+button.warn-btn:hover{background:#fdf3e3}
+button.danger{color:#c0392b;border-color:transparent;background:transparent}
+button.danger:hover{background:#fdecea;border-color:#c0392b}
+.card{background:#fff;border:1px solid #e4e4dc;border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.metric{background:#f5f5f0;border-radius:8px;padding:10px;text-align:center}
+.metric-label{font-size:11px;color:#888;margin-bottom:3px}
+.metric-val{font-size:17px;font-weight:500}
+.slabel{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.emp-header{display:grid;grid-template-columns:1fr 80px 80px 70px 28px;gap:6px;margin-bottom:4px}
+.emp-header span{font-size:11px;color:#888;text-align:center}
+.emp-header span:first-child{text-align:left}
+.emp-row{display:grid;grid-template-columns:1fr 80px 80px 70px 28px;gap:6px;align-items:center;margin-bottom:5px}
+.time-field{width:76px;text-align:center;letter-spacing:2px}
+.divider{border:none;border-top:1px solid #ebebe4;margin:12px 0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.bag-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.spray-row{display:grid;grid-template-columns:1fr 76px 110px 30px;gap:6px;align-items:center;margin-bottom:5px}
+.spray-hdr{display:grid;grid-template-columns:1fr 76px 110px 30px;gap:6px;margin-bottom:4px}
+.spray-hdr span{font-size:11px;color:#888}
+.work-row{display:grid;grid-template-columns:1fr 1fr 1fr 28px;gap:6px;align-items:center;margin-bottom:5px}
+.work-hdr{display:grid;grid-template-columns:1fr 1fr 1fr 28px;gap:6px;margin-bottom:4px}
+.work-hdr span{font-size:11px;color:#888}
+.inline-check{display:flex;align-items:center;gap:6px;font-size:13px}
+.step{display:none}.step.active{display:block}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4a9e5c;color:#fff;padding:9px 22px;border-radius:24px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e8f4ea;color:#4a9e5c;font-size:11px;cursor:pointer;position:relative;font-style:normal;line-height:1;vertical-align:middle;margin-left:3px}
+.tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;padding:7px 10px;border-radius:8px;white-space:normal;width:220px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity .2s;z-index:100;font-weight:400}
+.tip:hover::after{opacity:1}
+.client-header{background:linear-gradient(135deg,#f0f8f0,#e8f4ea);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media(max-width:520px){
+  .emp-header,.emp-row{grid-template-columns:1fr 70px 70px 60px 26px}
+  .bag-grid{grid-template-columns:1fr 1fr}
+  .work-row,.work-hdr{grid-template-columns:1fr 1fr 1fr 26px}
+}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div id="toast" class="toast"></div>
+
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <i class="ti ti-plant-2" style="font-size:24px;color:#4a9e5c"></i>
+      <div>
+        <div style="font-size:18px;font-weight:600;line-height:1.2">Garden Log</div>
+        <div style="font-size:11px;color:#888" id="day-badge"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span id="save-indicator" style="font-size:11px;color:#888"></span>
+      <button class="warn-btn" onclick="confirmNewDay()"><i class="ti ti-refresh"></i> New day</button>
+      <button class="save-btn" onclick="saveDay()"><i class="ti ti-device-floppy"></i> Save</button>
+    </div>
+  </div>
+
+  <!-- MAIN PAGE -->
+  <div id="step-main" class="step active">
+
+    <!-- Gardener + Email -->
+    <div class="card">
+      <div class="g2">
+        <div>
+          <label style="font-size:12px;color:#888;display:block;margin-bottom:3px">Your name</label>
+          <input type="text" id="sup-name" placeholder="e.g. Kim">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#888;display:block;margin-bottom:3px">Email</label>
+          <input type="email" id="sup-email" placeholder="your@email.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- Clients -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:15px;font-weight:600;color:#333">Clients</span>
+    </div>
+
+    <div id="clients-list"></div>
+
+    <!-- Add / Remove -->
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="primary" onclick="addClient()"><i class="ti ti-plus"></i> Add client</button>
+      <button class="danger" style="border:1px solid #c0392b;padding:6px 12px" onclick="removeLastClient()"><i class="ti ti-minus"></i> Remove client</button>
+    </div>
+
+    <!-- Day totals -->
+    <div class="card" style="margin-top:4px">
+      <div class="slabel">Day totals</div>
+      <div style="background:#f5f5f0;border-radius:8px;padding:12px;max-width:200px">
+        <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">Miles driven today</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="number" id="miles-total" value="0" min="0" step="0.1" style="width:100px">
+          <span style="font-size:12px;color:#888">miles</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;margin-bottom:12px">
+      <button onclick="showStep('step-summary')">Day summary <i class="ti ti-chart-bar"></i></button>
+      <button class="primary" onclick="submitReport()"><i class="ti ti-send"></i> Submit report</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="step-summary" class="step">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:16px;font-weight:600">Day summary</span>
+      <button onclick="showStep('step-main')"><i class="ti ti-arrow-left"></i> Back</button>
+    </div>
+    <div id="summary-content"></div>
+  </div>
+</div>
+
+<script>
+let clientCount = 0;
+const SAVE_KEY = 'gardenlog_v1';
+
+function init() {
+  document.getElementById('day-badge').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (saved) {
+    try { restoreDay(JSON.parse(saved)); showToast('Restored saved data'); }
+    catch(e) { /* fresh start */ }
+  }
+}
+
+function confirmNewDay() {
+  if (confirm('Start a new day? This will clear all current data.')) {
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  }
+}
+
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  if (id === 'step-summary') renderSummary();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+
+
+function addClient(data) {
+  const id = 'c' + clientCount++;
+  const list = document.getElementById('clients-list');
+  const card = document.createElement('div');
+  card.className = 'card client-card';
+  card.id = id;
+  card.innerHTML =
+
+  // ── CLIENT NAME HEADER ────────────────────────────────────────────────────
+  '<div class="client-header">' +
+    '<input type="text" placeholder="Client name" style="font-size:15px;font-weight:600;max-width:220px;border:none;background:transparent;padding:0">' +
+    '<button class="danger" onclick="document.getElementById(\'' + id + '\').remove()" style="padding:3px 8px"><i class="ti ti-trash"></i></button>' +
+  '</div>' +
+
+  // ── 1. TIME TRACKING ──────────────────────────────────────────────────────
+  '<div class="slabel"><i class="ti ti-clock" style="font-size:12px"></i> Time tracking</div>' +
+  '<div class="emp-header"><span>Person</span><span>Start</span><span>End</span><span>Hours</span><span></span></div>' +
+  '<div class="emp-rows" id="' + id + '-emps"></div>' +
+  '<button onclick="addEmpRow(\'' + id + '\')" style="font-size:12px;margin-top:4px;margin-bottom:8px"><i class="ti ti-plus"></i> Add person</button>' +
+  '<div style="margin-bottom:12px">' +
+    '<div class="metric" style="display:inline-block;min-width:130px"><div class="metric-label">Hours worked</div><div style="font-size:16px;font-weight:500" id="' + id + '-worked">0.00</div></div>' +
+  '</div>' +
+
+  // ── 2. WORK LOG ───────────────────────────────────────────────────────────
+  '<hr class="divider">' +
+  '<div class="slabel"><i class="ti ti-notes" style="font-size:12px"></i> Work log</div>' +
+  '<div class="work-hdr"><span>Action</span><span>Plants</span><span>Location</span><span></span></div>' +
+  '<div id="' + id + '-work"></div>' +
+  '<button onclick="addWorkRow(\'' + id + '\')" style="font-size:12px;margin-bottom:12px"><i class="ti ti-plus"></i> Add entry</button>' +
+
+  // ── 3. PRODUCTS ───────────────────────────────────────────────────────────
+  '<hr class="divider">' +
+  '<div class="slabel"><i class="ti ti-leaf" style="font-size:12px"></i> Products</div>' +
+
+  // 3a. IPM
+  '<div style="margin-bottom:12px">' +
+    '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">IPM</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 80px 70px 28px;gap:6px;margin-bottom:4px">' +
+      '<span style="font-size:11px;color:#888">Product</span>' +
+      '<span style="font-size:11px;color:#888">Amount used</span>' +
+      '<span style="font-size:11px;color:#888">Charge</span>' +
+      '<span></span>' +
+    '</div>' +
+    '<div id="' + id + '-sprays"></div>' +
+    '<button onclick="addSpray(\'' + id + '\')" style="font-size:12px;margin-bottom:6px"><i class="ti ti-plus"></i> Add IPM product</button>' +
+    '<div style="font-size:12px;color:#2d6a3f;font-weight:600;margin-top:4px">IPM charges: <span id="' + id + '-spray-total">$0.00</span></div>' +
+  '</div>' +
+
+  // 3b. Plants
+  '<div style="margin-bottom:12px">' +
+    '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Plants</div>' +
+    '<label class="inline-check" style="font-weight:400;margin-bottom:6px"><input type="checkbox" id="' + id + '-planted-cb" onchange="togglePlanted(\'' + id + '\')"> Plants used?</label>' +
+    '<div id="' + id + '-planted-section" style="display:none;margin-top:6px">' +
+      '<div style="display:grid;grid-template-columns:1fr 30px;gap:6px;margin-bottom:4px"><span style="font-size:11px;color:#888">What was planted?</span><span></span></div>' +
+      '<div id="' + id + '-plants"></div>' +
+      '<button onclick="addPlant(\'' + id + '\')" style="font-size:12px;margin-top:4px"><i class="ti ti-plus"></i> Add plant</button>' +
+    '</div>' +
+  '</div>' +
+
+  // 3c. Scram + Rosetone
+  '<div class="g2" style="margin-bottom:12px">' +
+    '<div>' +
+      '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Scram</div>' +
+      '<div style="display:flex;align-items:center;gap:6px">' +
+        '<input type="number" min="0" placeholder="0" id="' + id + '-scram" style="width:80px">' +
+        '<span style="font-size:12px;color:#888">cups</span>' +
+      '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Rosetone</div>' +
+      '<div style="display:flex;align-items:center;gap:6px">' +
+        '<input type="number" min="0" placeholder="0" id="' + id + '-rose-n" style="width:80px">' +
+        '<span style="font-size:12px;color:#888">cups</span>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+
+  // ── 4. BAGS ───────────────────────────────────────────────────────────────
+  '<hr class="divider">' +
+  '<div class="slabel"><i class="ti ti-archive" style="font-size:12px"></i> Bags</div>' +
+  '<div class="bag-grid" style="margin-bottom:10px">' +
+    '<div><label style="font-size:12px;color:#185FA5;display:block;margin-bottom:3px">Paper left</label><input type="number" min="0" placeholder="0" id="' + id + '-paper-left"></div>' +
+    '<div><label style="font-size:12px;color:#185FA5;display:block;margin-bottom:3px">Paper hauled</label><input type="number" min="0" placeholder="0" id="' + id + '-paper-hauled"></div>' +
+    '<div><label style="font-size:12px;color:#c17f2a;display:block;margin-bottom:3px">Plastic left</label><input type="number" min="0" placeholder="0" id="' + id + '-plastic-left"></div>' +
+    '<div><label style="font-size:12px;color:#c17f2a;display:block;margin-bottom:3px">Plastic hauled</label><input type="number" min="0" placeholder="0" id="' + id + '-plastic-hauled"></div>' +
+  '</div>' +
+
+  // ── NOTES ─────────────────────────────────────────────────────────────────
+  '<div style="margin-top:6px">' +
+    '<label style="font-size:12px;color:#888;display:block;margin-bottom:3px">Notes</label>' +
+    '<textarea id="' + id + '-notes" placeholder="Anything else worth noting..." rows="2"></textarea>' +
+  '</div>'
+
+  list.appendChild(card);
+  if (data) restoreClientData(id, data);
+  // Add one empty work row by default
+  if (!data) addWorkRow(id);
+}
+
+// ── WORK ROW ────────────────────────────────────────────────────────────────
+function addWorkRow(cid, action, plant, location) {
+  action = action||''; plant = plant||''; location = location||'';
+  document.getElementById(cid+'-work').insertAdjacentHTML('beforeend',
+    '<div class="work-row">' +
+      '<input type="text" placeholder="e.g. Weeded" value="'+action+'">' +
+      '<input type="text" placeholder="e.g. Daffodils" value="'+plant+'">' +
+      '<input type="text" placeholder="e.g. Front bed" value="'+location+'">' +
+      '<button class="danger" onclick="this.parentElement.remove()" style="padding:3px 5px"><i class="ti ti-x"></i></button>' +
+    '</div>'
+  );
+}
+
+// ── EMPLOYEE ROW ─────────────────────────────────────────────────────────────
+function empRow(name, start, end) {
+  name=name||''; start=start||''; end=end||'';
+  return '<div class="emp-row">' +
+    '<input type="text" placeholder="Name" value="'+name+'" oninput="recalcClient(this.closest(\'.client-card\').id)">' +
+    '<input type="text" class="time-field" placeholder="0800" maxlength="4" value="'+start+'" oninput="recalcClient(this.closest(\'.client-card\').id)" style="border:1px solid #d0d0c8;border-radius:8px;padding:6px 4px">' +
+    '<input type="text" class="time-field" placeholder="1700" maxlength="4" value="'+end+'" oninput="recalcClient(this.closest(\'.client-card\').id)" style="border:1px solid #d0d0c8;border-radius:8px;padding:6px 4px">' +
+    '<input type="text" readonly placeholder="0.00" style="background:#f5f5f0;text-align:center;font-size:12px;border:1px solid #e4e4dc;border-radius:8px;padding:6px 4px">' +
+    '<button class="danger" onclick="this.parentElement.remove();recalcClient(this.closest(\'.client-card\')?.id)" style="padding:3px 5px"><i class="ti ti-x"></i></button>' +
+    '</div>';
+}
+
+function addEmpRow(cid) {
+  var container = document.getElementById(cid+'-emps');
+  var firstRow = container.querySelector('.emp-row');
+  var start='', end='';
+  if (firstRow) {
+    var tIns = firstRow.querySelectorAll('input.time-field');
+    if (tIns[0]) start = tIns[0].value;
+    if (tIns[1]) end = tIns[1].value;
+  }
+  container.insertAdjacentHTML('beforeend', empRow('', start, end));
+}
+
+var PRODUCTS = [
+  {
+    name:'Avenger Weed Spray',
+    unit:'oz',
+    defaultAmt:20,
+    baseCharge:25.00,   // flat fee covering first 20oz
+    baseAmt:20,         // included in flat fee
+    costPerUnit: (125/128) * 1.4  // cost per oz with 40% markup
+  },
+  {
+    name:'Garden Friendly Fungicide',
+    unit:'tsp',
+    defaultAmt:1,
+    baseCharge:8.00,    // flat fee covering first 1 tsp
+    baseAmt:1,          // included in flat fee
+    costPerUnit: (25/94) * 1.4  // cost per tsp with 40% markup
+  },
+  {
+    name:'Other',
+    unit:'',
+    defaultAmt:'',
+    baseCharge:0,
+    baseAmt:0,
+    costPerUnit:0
+  }
+];
+
+function calcCharge(product, amt) {
+  amt = parseFloat(amt) || 0;
+  if (!product || product.name === 'Other') return 0;
+  var base = product.baseCharge;
+  var extra = 0;
+  if (amt > product.baseAmt) {
+    extra = (amt - product.baseAmt) * product.costPerUnit;
+  }
+  return Math.round((base + extra) * 100) / 100;
+}
+
+function getProductOptions(selected) {
+  return PRODUCTS.map(function(p){
+    return '<option value="'+p.name+'"'+(p.name===selected?' selected':'')+'>'+p.name+'</option>';
+  }).join('');
+}
+
+function onProductChange(sel) {
+  var row = sel.parentElement;
+  var p = PRODUCTS.find(function(x){ return x.name === sel.value; });
+  if (!p) return;
+  var amtIn = row.querySelector('.spray-amt');
+  var chargeIn = row.querySelector('.spray-charge');
+  var unitEl = row.querySelector('.spray-unit');
+  if (p.name !== 'Other') {
+    amtIn.value = p.defaultAmt;
+    chargeIn.value = calcCharge(p, p.defaultAmt).toFixed(2);
+    if (unitEl) unitEl.textContent = p.unit;
+  } else {
+    amtIn.value = '';
+    chargeIn.value = '';
+    if (unitEl) unitEl.textContent = '';
+  }
+  updateSprayTotal(row.closest('.client-card').id);
+}
+
+function updateSprayTotal(cid) {
+  var card = document.getElementById(cid); if (!card) return;
+  var total = 0;
+  card.querySelectorAll('.spray-charge').forEach(function(el){
+    total += parseFloat(el.value)||0;
+  });
+  var el = document.getElementById(cid+'-spray-total');
+  if (el) el.textContent = '$'+total.toFixed(2);
+}
+
+function addSpray(cid, name, amt, charge) {
+  name=name||PRODUCTS[0].name;
+  var p = PRODUCTS.find(function(x){ return x.name===name; }) || PRODUCTS[0];
+  amt = amt!==undefined ? amt : p.defaultAmt;
+  charge = charge!==undefined ? charge : p.charge;
+  var div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 80px 70px 28px;gap:6px;align-items:center;margin-bottom:5px';
+  var sel = document.createElement('select');
+  sel.style.cssText = 'border:1px solid #d0d0c8;border-radius:8px;padding:6px 8px;background:#fff;color:#1a1a1a;font-family:inherit;font-size:13px';
+  sel.innerHTML = getProductOptions(name);
+  sel.onchange = function(){ onProductChange(sel); };
+  var amtWrap = document.createElement('div');
+  amtWrap.style.cssText = 'display:flex;align-items:center;gap:3px';
+  var amtIn = document.createElement('input');
+  amtIn.type='number'; amtIn.className='spray-amt'; amtIn.min='0'; amtIn.step='0.5'; amtIn.value=amt;
+  amtIn.style.cssText='width:52px;border:1px solid #d0d0c8;border-radius:8px;padding:5px 4px;text-align:center';
+  amtIn.oninput = function(){
+    var card = amtIn.closest('.client-card');
+    var selEl = card ? card.querySelector('select') : null;
+    var p = selEl ? PRODUCTS.find(function(x){ return x.name === selEl.value; }) : null;
+    if (p && p.name !== 'Other') {
+      chargeIn.value = calcCharge(p, amtIn.value).toFixed(2);
+    }
+    updateSprayTotal(amtIn.closest('.client-card').id);
+  };
+  var unitSpan = document.createElement('span');
+  unitSpan.className='spray-unit'; unitSpan.style.cssText='font-size:11px;color:#888';
+  unitSpan.textContent = p.unit;
+  amtWrap.appendChild(amtIn); amtWrap.appendChild(unitSpan);
+  var chargeIn = document.createElement('input');
+  chargeIn.type='number'; chargeIn.className='spray-charge'; chargeIn.min='0'; chargeIn.step='0.01';
+  chargeIn.value=parseFloat(charge).toFixed(2); chargeIn.placeholder='$0.00';
+  chargeIn.style.cssText='width:70px;border:1px solid #d0d0c8;border-radius:8px;padding:5px 6px;background:#f0faf0';
+  chargeIn.oninput = function(){ updateSprayTotal(chargeIn.closest('.client-card').id); };
+  var delBtn = document.createElement('button');
+  delBtn.className='danger'; delBtn.style.cssText='padding:3px 5px';
+  delBtn.innerHTML='<i class="ti ti-x"></i>';
+  delBtn.onclick = function(){ var c=delBtn.closest('.client-card'); div.remove(); if(c) updateSprayTotal(c.id); };
+  div.appendChild(sel); div.appendChild(amtWrap); div.appendChild(chargeIn); div.appendChild(delBtn);
+  document.getElementById(cid+'-sprays').appendChild(div);
+  updateSprayTotal(cid);
+}
+
+function addPlant(cid, val) {
+  val = val||'';
+  document.getElementById(cid+'-plants').insertAdjacentHTML('beforeend',
+    '<div style="display:grid;grid-template-columns:1fr 30px;gap:6px;align-items:center;margin-bottom:5px">' +
+      '<input type="text" placeholder="e.g. 24 pansies" value="'+val+'">' +
+      '<button class="danger" onclick="this.parentElement.remove()" style="padding:3px 5px"><i class="ti ti-x"></i></button>' +
+    '</div>');
+}
+
+
+
+function togglePlanted(cid) {
+  var cb = document.getElementById(cid+'-planted-cb');
+  var sec = document.getElementById(cid+'-planted-section');
+  sec.style.display = cb.checked ? 'block' : 'none';
+  if (cb.checked && document.getElementById(cid+'-plants').children.length === 0) addPlant(cid);
+}
+
+function removeLastClient() {
+  var cards = document.querySelectorAll('.client-card');
+  if (cards.length === 0) { showToast('No clients to remove'); return; }
+  if (confirm('Remove the last client?')) cards[cards.length-1].remove();
+}
+
+// ── TIME PARSING ─────────────────────────────────────────────────────────────
+function parseMilitary(val) {
+  val = (val||'').replace(/[^0-9]/g,'');
+  if (!val.length) return null;
+  var h, m;
+  if (val.length <= 2) { h=parseInt(val); m=0; }
+  else { h=parseInt(val.slice(0,-2)); m=parseInt(val.slice(-2)); }
+  if (isNaN(h)||isNaN(m)||h>23||m>59) return null;
+  return h + m/60;
+}
+
+function fmtMilitary(val) {
+  val = (val||'').replace(/[^0-9]/g,'');
+  if (!val) return '—';
+  var h, m;
+  if (val.length<=2){h=parseInt(val);m=0;}
+  else{h=parseInt(val.slice(0,-2));m=parseInt(val.slice(-2));}
+  return String(h||0).padStart(2,'0')+':'+String(m||0).padStart(2,'0');
+}
+
+function recalcClient(id) {
+  var card = document.getElementById(id); if (!card) return;
+  var totalWorked = 0;
+  card.querySelectorAll('.emp-row').forEach(function(row) {
+    var tIns = row.querySelectorAll('input.time-field');
+    var s = tIns[0] ? parseMilitary(tIns[0].value) : null;
+    var e = tIns[1] ? parseMilitary(tIns[1].value) : null;
+    var hrs = (s!==null&&e!==null&&e>s) ? e-s : 0;
+    var out = row.querySelector('input[readonly]');
+    if (out) out.value = hrs>0 ? hrs.toFixed(2)+' hr' : '';
+    totalWorked += hrs;
+  });
+  var workedEl = document.getElementById(id+'-worked');
+  if (workedEl) workedEl.textContent = totalWorked.toFixed(2);
+}
+
+// ── GET CLIENT DATA ──────────────────────────────────────────────────────────
+function getClientData(card) {
+  var id = card.id;
+  var name = card.querySelector('input[type=text]').value || 'Unnamed client';
+  var worked = parseFloat(document.getElementById(id+'-worked').textContent)||0;
+  var scram = parseInt(document.getElementById(id+'-scram').value)||0;
+  var roseOn = false;
+  var roseN = parseInt(document.getElementById(id+'-rose-n') ? document.getElementById(id+'-rose-n').value : 0)||0;
+  if (roseN > 0) roseOn = true;
+  var plantedOn = document.getElementById(id+'-planted-cb').checked||false;
+  var plants = [];
+  var plantsEl = document.getElementById(id+'-plants');
+  if (plantsEl) plantsEl.querySelectorAll('input[type=text]').forEach(function(i){ if(i.value) plants.push(i.value); });
+  var paperLeft=parseInt(document.getElementById(id+'-paper-left').value)||0;
+  var paperHauled=parseInt(document.getElementById(id+'-paper-hauled').value)||0;
+  var plasticLeft=parseInt(document.getElementById(id+'-plastic-left').value)||0;
+  var plasticHauled=parseInt(document.getElementById(id+'-plastic-hauled').value)||0;
+  var notes = document.getElementById(id+'-notes') ? document.getElementById(id+'-notes').value||'' : '';
+  var sprays=[];
+  var sprayTotal=0;
+  card.querySelectorAll('#'+id+'-sprays > div').forEach(function(row){
+    var sel=row.querySelector('select');
+    var amt=row.querySelector('.spray-amt');
+    var charge=row.querySelector('.spray-charge');
+    var unit=row.querySelector('.spray-unit');
+    if(sel) {
+      var c=parseFloat(charge?charge.value:0)||0;
+      sprayTotal+=c;
+      sprays.push({name:sel.value,amt:amt?amt.value:'',unit:unit?unit.textContent:'',charge:c});
+    }
+  });
+  var employees=[];
+  card.querySelectorAll('.emp-row').forEach(function(row){
+    var nameIn=row.querySelector('input[type=text]');
+    var tIns=row.querySelectorAll('input.time-field');
+    var out=row.querySelector('input[readonly]');
+    if(nameIn&&nameIn.value) employees.push({name:nameIn.value,start:tIns[0]?tIns[0].value:'',end:tIns[1]?tIns[1].value:'',hrs:out?out.value:''});
+  });
+  var workLog=[];
+  card.querySelectorAll('.work-row').forEach(function(row){
+    var ins=row.querySelectorAll('input[type=text]');
+    if(ins[0]&&(ins[0].value||ins[1].value||ins[2].value)) workLog.push({action:ins[0].value,plant:ins[1].value,location:ins[2].value});
+  });
+  return {id:id,name:name,worked:worked,scram:scram,roseOn:roseOn,roseN:roseN,
+    plantedOn:plantedOn,plants:plants,paperLeft:paperLeft,paperHauled:paperHauled,
+    plasticLeft:plasticLeft,plasticHauled:plasticHauled,notes:notes,sprays:sprays,sprayTotal:sprayTotal,
+    employees:employees,workLog:workLog};
+}
+
+// ── SAVE / RESTORE ───────────────────────────────────────────────────────────
+function saveDay() {
+  var data = {
+    savedAt: new Date().toISOString(),
+    name: document.getElementById('sup-name').value,
+    email: document.getElementById('sup-email').value,
+    miles: document.getElementById('miles-total').value,
+    clients: [...document.querySelectorAll('.client-card')].map(function(c){ return getClientData(c); })
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  var t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  document.getElementById('save-indicator').textContent = 'Saved '+t;
+  showToast('Saved at '+t);
+}
+
+function restoreDay(data) {
+  if (data.name) document.getElementById('sup-name').value = data.name;
+  if (data.email) document.getElementById('sup-email').value = data.email;
+  if (data.miles) document.getElementById('miles-total').value = data.miles;
+  (data.clients||[]).forEach(function(c){ addClient(c); });
+}
+
+function restoreClientData(id, d) {
+  var card = document.getElementById(id); if (!card) return;
+  var nameIn = card.querySelector('input[type=text]'); if (nameIn) nameIn.value = d.name||'';
+  var scramIn = document.getElementById(id+'-scram'); if (scramIn) scramIn.value = d.scram||0;
+  var roseN = document.getElementById(id+'-rose-n'); if (roseN) roseN.value = d.roseN||0;
+  var plantedCb = document.getElementById(id+'-planted-cb');
+  if (plantedCb && d.plantedOn) {
+    plantedCb.checked=true; togglePlanted(id);
+    var plantsEl = document.getElementById(id+'-plants');
+    if (plantsEl && d.plants && d.plants.length) { plantsEl.innerHTML=''; d.plants.forEach(function(p){ addPlant(id,p); }); }
+  }
+  var pl=document.getElementById(id+'-paper-left'); if(pl) pl.value=d.paperLeft||0;
+  var ph=document.getElementById(id+'-paper-hauled'); if(ph) ph.value=d.paperHauled||0;
+  var pll=document.getElementById(id+'-plastic-left'); if(pll) pll.value=d.plasticLeft||0;
+  var plh=document.getElementById(id+'-plastic-hauled'); if(plh) plh.value=d.plasticHauled||0;
+  var notesEl=document.getElementById(id+'-notes'); if(notesEl&&d.notes) notesEl.value=d.notes;
+  (d.sprays||[]).forEach(function(s){ addSpray(id,s.name,s.amt,s.charge); });
+  var empContainer=document.getElementById(id+'-emps');
+  if (empContainer && d.employees && d.employees.length) {
+    empContainer.innerHTML='';
+    d.employees.forEach(function(e){ empContainer.insertAdjacentHTML('beforeend',empRow(e.name,e.start,e.end)); });
+  }
+  var workEl=document.getElementById(id+'-work');
+  if (workEl && d.workLog && d.workLog.length) {
+    workEl.innerHTML='';
+    d.workLog.forEach(function(w){ addWorkRow(id,w.action,w.plant,w.location); });
+  }
+  recalcClient(id);
+}
+
+// ── SUMMARY ──────────────────────────────────────────────────────────────────
+function renderSummary() {
+  var name = document.getElementById('sup-name').value||'—';
+  var miles = parseFloat(document.getElementById('miles-total').value)||0;
+  var cards = [...document.querySelectorAll('.client-card')];
+  var html = '<div class="card" style="margin-bottom:10px;padding:12px 16px">' +
+    '<div style="font-size:14px;font-weight:600">' + name + '</div>' +
+    '<div style="font-size:12px;color:#888;margin-top:3px">Miles driven: ' + (parseFloat(document.getElementById('miles-total').value)||0) + '</div>' +
+  '</div>';
+
+  cards.forEach(function(card) {
+    var d = getClientData(card);
+    html += '<div class="card" style="margin-bottom:8px;padding:14px 16px">' +
+      '<div style="font-weight:600;font-size:14px;margin-bottom:8px;color:#2d6a3f">' + d.name + '</div>';
+
+    // Work log
+    if (d.workLog && d.workLog.length) {
+      html += '<div class="slabel" style="margin-bottom:6px">Work done</div>';
+      html += '<ul style="margin:0 0 10px 16px;font-size:13px;color:#333;line-height:1.8">';
+      d.workLog.forEach(function(w) {
+        var parts = [];
+        if (w.action) parts.push(w.action);
+        if (w.plant) parts.push(w.plant);
+        if (w.location) parts.push('at ' + w.location);
+        if (parts.length) html += '<li>' + parts.join(' — ') + '</li>';
+      });
+      html += '</ul>';
+    }
+
+    // Time
+    if (d.employees && d.employees.length) {
+      html += '<div style="font-size:12px;color:#888;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
+      d.employees.forEach(function(e){
+        html += '<span style="background:#f5f5f0;border-radius:6px;padding:2px 8px">' +
+          e.name + ' ' + fmtMilitary(e.start) + '&rarr;' + fmtMilitary(e.end) +
+          ' <strong>' + (e.hrs||'0hr') + '</strong></span>';
+      });
+      html += '</div>';
+    }
+    html += '<div style="font-size:12px;color:#555;margin-bottom:6px">Hours worked: <strong>' + d.worked.toFixed(2) + ' hr</strong></div>';
+
+    // Products
+    var prods = [];
+    if (d.scram > 0) prods.push('Scram: ' + d.scram + ' cups');
+    if (d.roseOn) prods.push('Rosetone: ' + d.roseN + ' roses');
+    if (d.sprays.length) d.sprays.forEach(function(s){ prods.push(s.name+' '+s.amt+(s.unit?' '+s.unit:'')+' ($'+parseFloat(s.charge||0).toFixed(2)+')'); });
+    if (d.sprayTotal > 0) prods.push('<strong>Spray total: $'+d.sprayTotal.toFixed(2)+'</strong>');
+    if (d.plantedOn && d.plants.length) prods.push('Planted: ' + d.plants.join(', '));
+    if (prods.length) html += '<div style="font-size:12px;color:#555;margin-bottom:6px">' + prods.join(' &nbsp;|&nbsp; ') + '</div>';
+
+    // Bags
+    var bags = [];
+    if (d.paperLeft||d.paperHauled) bags.push('<span style="background:#E6F1FB;border-radius:6px;padding:2px 8px;color:#0C447C">Paper: '+d.paperLeft+' left, '+d.paperHauled+' hauled</span>');
+    if (d.plasticLeft||d.plasticHauled) bags.push('<span style="background:#fdf3e3;border-radius:6px;padding:2px 8px;color:#7a4f00">Plastic: '+d.plasticLeft+' left, '+d.plasticHauled+' hauled</span>');
+    if (bags.length) html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px">' + bags.join('') + '</div>';
+
+    // Notes
+    if (d.notes) html += '<div style="font-size:12px;color:#555;font-style:italic;margin-top:4px">' + d.notes.split('\n').join('<br>') + '</div>';
+
+    html += '</div>';
+  });
+  document.getElementById('summary-content').innerHTML = html;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────────────────
+function getReportEmail() {
+  return document.getElementById('sup-email').value.trim() || '';
+}
+
+function submitReport() {
+  var toEmail = getReportEmail();
+  if (!toEmail) { showToast('Please enter your email first'); return; }
+  var name = document.getElementById('sup-name').value||'Gardener';
+  var date = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  var miles = parseFloat(document.getElementById('miles-total').value)||0;
+  var cards = [...document.querySelectorAll('.client-card')];
+  var subject = 'Garden Log — ' + new Date().toLocaleDateString();
+  var body = 'GARDEN LOG — ' + date + '\nGardener: ' + name + '\n';
+  body += 'Miles driven: ' + miles + '\n';
+  body += '='.repeat(40) + '\n\n';
+  cards.forEach(function(card) {
+    var d = getClientData(card);
+    body += 'CLIENT: ' + d.name + '\n';
+    body += 'Hours worked: ' + d.worked.toFixed(2) + '\n';
+    if (d.workLog && d.workLog.length) {
+      body += 'Work done:\n';
+      d.workLog.forEach(function(w){
+        var parts = [];
+        if (w.action) parts.push(w.action);
+        if (w.plant) parts.push(w.plant);
+        if (w.location) parts.push('at ' + w.location);
+        if (parts.length) body += '  - ' + parts.join(' — ') + '\n';
+      });
+    }
+    if (d.employees && d.employees.length) {
+      d.employees.forEach(function(e){
+        body += '  ' + e.name + ': ' + fmtMilitary(e.start) + ' to ' + fmtMilitary(e.end) + ' (' + (e.hrs||'0 hr') + ')\n';
+      });
+    }
+    if (d.scram > 0) body += 'Scram: ' + d.scram + ' cups\n';
+    if (d.roseOn) body += 'Rosetone: ' + d.roseN + ' roses\n';
+    d.sprays.forEach(function(s){ body += 'Spray: ' + s.name + ' — ' + s.amt + (s.unit?' '+s.unit:'') + ' — charge: $' + parseFloat(s.charge||0).toFixed(2) + '\n'; });
+    if (d.sprayTotal > 0) body += 'Spray total: $' + d.sprayTotal.toFixed(2) + '\n';
+    if (d.plantedOn && d.plants.length) body += 'Planted: ' + d.plants.join(', ') + '\n';
+    body += 'Paper: ' + d.paperLeft + ' left, ' + d.paperHauled + ' hauled\n';
+    body += 'Plastic: ' + d.plasticLeft + ' left, ' + d.plasticHauled + ' hauled\n';
+    if (d.notes) body += 'Notes: ' + d.notes + '\n';
+    body += '\n';
+  });
+  saveDay();
+  window.location.href = 'mailto:' + toEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  showToast('Opening email...');
+}
+
+init();
+</script>
+</body>
+</html>
